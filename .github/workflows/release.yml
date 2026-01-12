@@ -8,10 +8,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Harden the runner (Audit all outbound calls)
+      uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+      with:
+        egress-policy: audit
+
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
 
     - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@b6e674f4b717d7b0ae3baee0fbe79f498905dfde # v1.4.4
       with:
         java-version: 1.8
 
@@ -22,14 +27,14 @@ jobs:
       run: ./gradlew build
 
     - name: Release
-      uses: fnkr/github-action-ghr@v1
+      uses: fnkr/github-action-ghr@2fcb5ab637a49c14f4b3e7d81d0389d059171d35 # v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GHR_PATH: "build/libs/"
 
     - name: Generate Docker metadata
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@b2391d37b4157fa4aa2e118d643f417910ff3242 # v3.8.0
       with:
         images: |
           criteord/cassandra_exporter
@@ -41,16 +46,16 @@ jobs:
           latest=true
 
     - name: Login to Docker Hub
-      uses: docker/login-action@v1
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1.14.1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@f211e3e9ded2d9377c8cadc4489a4e38014bc4c9 # v1.7.0
 
     - name: Build and push
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
       with:
         context: .
         file: docker/Dockerfile
